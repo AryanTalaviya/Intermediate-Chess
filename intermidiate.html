@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intermediate Chess Lesson</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #F3E9D2 0%, #E8D5B7 100%);
+            color: #4A4A4A;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            border: 3px solid #C89F62;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: min(600px, 90vw);
+            padding: 1.5rem;
+        }
+        .btn {
+            background: linear-gradient(135deg, #8B5E34 0%, #A0693A 100%);
+            color: white;
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 94, 52, 0.3);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0;
+            border: 3px solid #8B5E34;
+            border-radius: 8px;
+            overflow: hidden;
+            width: min(280px, 80vw);
+            height: min(280px, 80vw);
+            margin: 1rem auto;
+        }
+        .square {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            font-weight: bold;
+        }
+        .light {
+            background-color: #F0D9B5;
+        }
+        .dark {
+            background-color: #B58863;
+        }
+        .piece-value {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, #FFF8E1 0%, #F3E5AB 100%);
+            border-radius: 12px;
+            border-left: 4px solid #C89F62;
+        }
+        .quiz-option {
+            background: white;
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .quiz-option:hover {
+            border-color: #C89F62;
+            background: #FFF8E1;
+        }
+        .quiz-option.correct {
+            border-color: #4CAF50;
+            background: #E8F5E8;
+        }
+        .quiz-option.incorrect {
+            border-color: #F44336;
+            background: #FFEBEE;
+        }
+        .pagination {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.75rem;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .page-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(139, 94, 52, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .page-indicator.active {
+            background: #8B5E34;
+            transform: scale(1.3);
+        }
+        .castling-demo {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            max-width: min(250px, 70vw);
+            margin: 1rem auto;
+        }
+        .demo-square {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.8rem, 3vw, 1.2rem);
+            border-radius: 4px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .page {
+                padding: 0.5rem;
+            }
+            .card {
+                border-radius: 15px;
+                border-width: 2px;
+                max-width: 95vw;
+                padding: 1rem;
+            }
+            .chessboard {
+                width: min(250px, 85vw);
+                height: min(250px, 85vw);
+                border-width: 2px;
+            }
+            .pagination {
+                bottom: 15px;
+                padding: 0.5rem 1rem;
+                gap: 0.5rem;
+            }
+            .page-indicator {
+                width: 10px;
+                height: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 0.75rem;
+            }
+            .chessboard {
+                width: min(220px, 90vw);
+                height: min(220px, 90vw);
+            }
+            .castling-demo {
+                max-width: min(200px, 80vw);
+            }
+            .piece-value {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+            .quiz-option {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Company Logo Styles */
+        .company-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-img {
+            max-width: 450px;
+            max-height: 180px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        
+        .logo-placeholder {
+            display: none;
+        }
+        
+        .logo-box {
+            border: 2px dashed #C89F62;
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            background: rgba(200, 159, 98, 0.1);
+        }
+        
+        .logo-text {
+            font-weight: bold;
+            color: #8B5E34;
+            font-size: clamp(0.875rem, 2vw, 1.125rem);
+        }
+        
+        @media (max-width: 480px) {
+            .logo-img {
+                max-width: 320px;
+                max-height: 140px;
+            }
+            .logo-box {
+                padding: 0.75rem 1.5rem;
+            }
+        }
+        
+        /* Text responsiveness */
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 3rem);
+        }
+        h2 {
+            font-size: clamp(1.25rem, 4vw, 2rem);
+        }
+        h3 {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+        }
+        p, li, div {
+            font-size: clamp(0.875rem, 2.5vw, 1.125rem);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="page-container">
+        <!-- Page 1: Title -->
+        <div id="page1" class="page active">
+            <div class="card text-center">
+                <!-- Company Logo Section -->
+                <div class="company-logo mb-6">
+                    <!-- Option 1: If you have a logo URL, replace the src below -->
+                    <img src="TG Logo.png" alt="Company Logo" class="logo-img" onerror="this.style.display='none'; document.querySelector('.logo-placeholder').style.display='block';">
+                    
+                    <!-- Option 2: Placeholder that shows if no logo URL is provided -->
+                    <div class="logo-placeholder">
+                        <div class="logo-box">
+                            <span class="logo-text">Tutor grid</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-4xl md:text-6xl mb-4"></div>
+                <h3 class="font-bold text-[#8B5E34] text-4xl md:text-5xl text-center mb-4">Intermediate Chess</h3>
+                <p class="text-lg md:text-xl mb-6">Hello champions! 🏆</p>
+                <p class="mb-8">Today we are going to learn some special chess rules that make you smarter, sharper, and more dangerous on the board.</p>
+                <div class="bg-amber-100 p-4 md:p-6 rounded-lg text-left space-y-3">
+                    <p class="font-bold text-lg text-center mb-4">📚 We'll cover:</p>
+                    <ul class="list-none space-y-2">
+                        <li>♟️ Chessboard setup</li>
+                        <li>⚖️ Piece values (who's stronger?)</li>
+                        <li>🏰 Castling</li>
+                        <li>👻 En passant</li>
+                        <li>🤝 Stalemate</li>
+                    </ul>
+                </div>
+                <button class="btn text-lg mt-6" onclick="nextPage()">Let's Begin! 🚀</button>
+            </div>
+        </div>
+
+        <!-- Page 2: Chessboard Setup -->
+        <div id="page2" class="page">
+            <div class="card">
+                <h2 class="font-bold text-[#8B5E34] mb-4 text-center">1. Chessboard Setup 🏁</h2>
+                <p class="mb-6 text-center">Imagine you are the commander of an army. You must place your soldiers correctly before the battle begins.</p>
+                
+                <div class="chessboard">
+                    <div class="square light">♜</div><div class="square dark">♞</div><div class="square light">♝</div><div class="square dark">♛</div>
+                    <div class="square light">♚</div><div class="square dark">♝</div><div class="square light">♞</div><div class="square dark">♜</div>
+                    <div class="square dark">♟</div><div class="square light">♟</div><div class="square dark">♟</div><div class="square light">♟</div>
+                    <div class="square dark">♟</div><div class="square light">♟</div><div class="square dark">♟</div><div class="square light">♟</div>
+                    <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                    <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                    <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                    <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                    <div class="square light">♙</div><div class="square dark">♙</div><div class="square light">♙</div><div class="square dark">♙</div>
+                    <div class="square light">♙</div><div class="square dark">♙</div><div class="square light">♙</div><div class="square dark">♙</div>
+                    <div class="square dark">♖</div><div class="square light">♘</div><div class="square dark">♗</div><div class="square light">♕</div>
+                    <div class="square dark">♔</div><div class="square light">♗</div><div class="square dark">♘</div><div class="square light">♖</div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-blue-100 p-4 rounded-lg">
+                        <p class="font-bold">🎯 Golden Rule:</p>
+                        <p>"White on Right" → the bottom-right square must always be light-colored.</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-lg">
+                        <p class="font-bold">👑 Queen Placement:</p>
+                        <p>Queen goes on her own color: White queen on light square, Black queen on dark square!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: Piece Values -->
+        <div id="page3" class="page">
+            <div class="card">
+                <h2 class="font-bold text-[#8B5E34] mb-4 text-center">2. Piece Values ⚖️</h2>
+                <p class="mb-6 text-center">Not all pieces are equal! Some are worth more than others in battle.</p>
+                
+                <div class="space-y-3">
+                    <div class="piece-value">
+                        <span class="text-xl md:text-2xl">♟️ Pawn</span>
+                        <span class="font-bold text-lg md:text-xl">1 point</span>
+                    </div>
+                    <div class="piece-value">
+                        <span class="text-xl md:text-2xl">♞ Knight</span>
+                        <span class="font-bold text-lg md:text-xl">3 points</span>
+                    </div>
+                    <div class="piece-value">
+                        <span class="text-xl md:text-2xl">♝ Bishop</span>
+                        <span class="font-bold text-lg md:text-xl">3 points</span>
+                    </div>
+                    <div class="piece-value">
+                        <span class="text-xl md:text-2xl">♜ Rook</span>
+                        <span class="font-bold text-lg md:text-xl">5 points</span>
+                    </div>
+                    <div class="piece-value">
+                        <span class="text-xl md:text-2xl">♛ Queen</span>
+                        <span class="font-bold text-lg md:text-xl">9 points</span>
+                    </div>
+                    <div class="piece-value">
+                        <span class="text-xl md:text-2xl">♚ King</span>
+                        <span class="font-bold text-lg md:text-xl">Priceless! 👑</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-yellow-100 rounded-lg text-center">
+                    <p class="font-bold">🧠 Quick Math:</p>
+                    <p>Would you trade your queen for two rooks? (9 vs 10 points - Yes!)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Castling -->
+        <div id="page4" class="page">
+            <div class="card">
+                <h2 class="font-bold text-[#8B5E34] mb-4 text-center">3. Castling 🏰</h2>
+                <p class="mb-6 text-center">A special move to keep your king safe! It's like building a fortress.</p>
+                
+                <div class="space-y-6">
+                    <div class="bg-blue-100 p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">How to Castle:</h3>
+                        <ol class="list-decimal list-inside space-y-1">
+                            <li>Move king 2 squares toward rook</li>
+                            <li>Move rook to square king crossed over</li>
+                        </ol>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="font-bold mb-2">Before Castling:</p>
+                        <div class="castling-demo">
+                            <div class="demo-square light"></div><div class="demo-square dark"></div><div class="demo-square light"></div><div class="demo-square dark"></div>
+                            <div class="demo-square light">♚</div><div class="demo-square dark"></div><div class="demo-square light"></div><div class="demo-square dark">♜</div>
+                        </div>
+                        <p class="font-bold mb-2 mt-4">After Castling:</p>
+                        <div class="castling-demo">
+                            <div class="demo-square light"></div><div class="demo-square dark"></div><div class="demo-square light"></div><div class="demo-square dark"></div>
+                            <div class="demo-square light"></div><div class="demo-square dark">♜</div><div class="demo-square light">♚</div><div class="demo-square dark"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-100 p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">⚠️ Castling Rules:</h3>
+                        <ul class="list-disc list-inside space-y-1 text-sm md:text-base">
+                            <li>King and rook must not have moved</li>
+                            <li>No pieces between king and rook</li>
+                            <li>King not in check</li>
+                            <li>King doesn't pass through check</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: En Passant -->
+        <div id="page5" class="page">
+            <div class="card">
+                <h2 class="font-bold text-[#8B5E34] mb-4 text-center">4. En Passant 👻</h2>
+                <p class="mb-6 text-center">The "ghost capture" - a sneaky pawn move that catches opponents off guard!</p>
+                
+                <div class="space-y-6">
+                    <div class="bg-purple-100 p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">When can you use En Passant?</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-sm md:text-base">
+                            <li>Enemy pawn moves 2 squares from starting position</li>
+                            <li>Your pawn is next to it (on same rank)</li>
+                            <li>You capture immediately on your next turn</li>
+                        </ol>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="font-bold mb-2">Example:</p>
+                        <div class="grid grid-cols-3 gap-2 md:gap-4 max-w-xs mx-auto">
+                            <div class="text-center">
+                                <p class="text-xs md:text-sm mb-2">1. Enemy pawn jumps</p>
+                                <div class="castling-demo w-16 md:w-20">
+                                    <div class="demo-square light">♙</div><div class="demo-square dark">♟</div><div class="demo-square light"></div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs md:text-sm mb-2">2. You capture "through"</p>
+                                <div class="castling-demo w-16 md:w-20">
+                                    <div class="demo-square light"></div><div class="demo-square dark"></div><div class="demo-square light">♙</div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs md:text-sm mb-2">3. Enemy pawn disappears!</p>
+                                <div class="castling-demo w-16 md:w-20">
+                                    <div class="demo-square light"></div><div class="demo-square dark"></div><div class="demo-square light">♙</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-100 p-4 rounded-lg text-center">
+                        <p class="font-bold">⏰ Remember:</p>
+                        <p>You must use en passant immediately - you can't save it for later!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 6: Stalemate -->
+        <div id="page6" class="page">
+            <div class="card">
+                <h2 class="font-bold text-[#8B5E34] mb-4 text-center">5. Stalemate 🤝</h2>
+                <p class="mb-6 text-center">When nobody wins! Sometimes the best defense is... no moves at all.</p>
+                
+                <div class="space-y-6">
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">What is Stalemate?</h3>
+                        <ul class="list-disc list-inside space-y-1 text-sm md:text-base">
+                            <li>It's your turn to move</li>
+                            <li>Your king is NOT in check</li>
+                            <li>You have NO legal moves</li>
+                            <li>Result: Draw (tie game)</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="font-bold mb-2">Classic Stalemate Position:</p>
+                        <div class="chessboard w-32 h-32 md:w-48 md:h-48 mx-auto">
+                            <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                            <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                            <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square dark">♔</div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                            <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                            <div class="square light">♕</div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                            <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                            <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+                            <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+                            <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light">♚</div>
+                        </div>
+                        <p class="text-xs md:text-sm mt-2">Black king has no moves but isn't in check = Stalemate!</p>
+                    </div>
+
+                    <div class="bg-green-100 p-4 rounded-lg">
+                        <p class="font-bold">🎯 Pro Tip:</p>
+                        <p class="text-sm md:text-base">If you're losing, try to force a stalemate. If you're winning, be careful not to accidentally cause one!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 7: Quiz -->
+        <div id="page7" class="page">
+            <div class="card">
+                <h2 class="font-bold text-[#8B5E34] mb-4 text-center">Quick Quiz! 🧠</h2>
+                <p class="mb-6 text-center">Test your knowledge of what we just learned!</p>
+                
+                <div id="quiz-container">
+                    <div class="quiz-question mb-6">
+                        <h3 class="font-bold mb-4">Question 1: Which piece is worth 5 points?</h3>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">♞ Knight</div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">♝ Bishop</div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">♜ Rook</div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">♛ Queen</div>
+                    </div>
+                </div>
+
+                <div id="quiz-result" class="hidden text-center">
+                    <div class="text-4xl md:text-6xl mb-4">🎉</div>
+                    <h3 class="font-bold text-green-600 mb-4">Excellent work, chess champion!</h3>
+                    <p>You've mastered the intermediate chess concepts. Keep practicing these special moves!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 8: Conclusion -->
+        <div id="page8" class="page">
+            <div class="card text-center">
+                <div class="text-4xl md:text-6xl mb-4">🏆</div>
+                <h2 class="font-bold text-[#8B5E34] mb-4">Congratulations!</h2>
+                <p class="text-lg md:text-xl mb-6">You've learned some powerful chess secrets!</p>
+                
+                <div class="bg-gradient-to-r from-yellow-100 to-amber-100 p-4 md:p-6 rounded-lg mb-6">
+                    <h3 class="font-bold mb-4">🎯 What you now know:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 text-left text-sm md:text-base">
+                        <div>✅ Proper board setup</div>
+                        <div>✅ Piece values</div>
+                        <div>✅ Castling technique</div>
+                        <div>✅ En passant capture</div>
+                        <div>✅ Stalemate recognition</div>
+                        <div>✅ Strategic thinking</div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <p class="font-semibold">🚀 Ready for your next challenge?</p>
+                    <p>Practice these moves in real games and watch your chess skills soar!</p>
+                    <button class="btn" onclick="restartLesson()">Start Over 🔄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Slider -->
+    <div class="pagination">
+        <div class="flex items-center gap-2">
+            <div class="page-indicator active" onclick="goToPage(1)"></div>
+            <div class="page-indicator" onclick="goToPage(2)"></div>
+            <div class="page-indicator" onclick="goToPage(3)"></div>
+            <div class="page-indicator" onclick="goToPage(4)"></div>
+            <div class="page-indicator" onclick="goToPage(5)"></div>
+            <div class="page-indicator" onclick="goToPage(6)"></div>
+            <div class="page-indicator" onclick="goToPage(7)"></div>
+            <div class="page-indicator" onclick="goToPage(8)"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const totalPages = 8;
+        let quizCompleted = false;
+
+        function showPage(pageNum) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show current page
+            document.getElementById(`page${pageNum}`).classList.add('active');
+            
+            // Update pagination indicators
+            document.querySelectorAll('.page-indicator').forEach((indicator, index) => {
+                indicator.classList.toggle('active', index + 1 === pageNum);
+            });
+            
+            currentPage = pageNum;
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        }
+
+        function goToPage(pageNum) {
+            showPage(pageNum);
+        }
+
+        function selectAnswer(element, isCorrect) {
+            // Remove previous selections
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.classList.remove('correct', 'incorrect');
+            });
+            
+            // Mark the selected answer
+            if (isCorrect) {
+                element.classList.add('correct');
+                setTimeout(() => {
+                    document.getElementById('quiz-container').style.display = 'none';
+                    document.getElementById('quiz-result').classList.remove('hidden');
+                    quizCompleted = true;
+                }, 1000);
+            } else {
+                element.classList.add('incorrect');
+                // Show correct answer after a delay
+                setTimeout(() => {
+                    document.querySelector('.quiz-option[onclick*="true"]').classList.add('correct');
+                }, 500);
+            }
+        }
+
+        function restartLesson() {
+            currentPage = 1;
+            quizCompleted = false;
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.classList.remove('correct', 'incorrect');
+            });
+            showPage(1);
+        }
+
+        // Initialize
+        showPage(1);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextPage();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevPage();
+            }
+        });
+
+        // Touch/swipe navigation for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - next page
+                    nextPage();
+                } else {
+                    // Swipe right - previous page
+                    prevPage();
+                }
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98118b27e09aff64',t:'MTc1ODIwNTg1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
